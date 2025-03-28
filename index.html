@@ -1,521 +1,77 @@
 <!DOCTYPE html>
-<html>
+<html lang="he">
 <head>
-  <meta charset="UTF-8">
-  <title>זריחה1</title>
-  <style>	
-      body {
-        font-family: Tahoma;
-      }
-      #wrapper {
-        text-align: center;
-		margin: auto;
-        max-width: 1200px;
-      }
-	  *, :before, :after {
-			box-sizing: border-box;
-		}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>רשימת עובדים ושעונים</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+</head>
+<body>
+    <input type="file" id="fileInput" />
+    <table id="dataTable" class="display">
+        <thead>
+            <tr>
+                <th>שעון</th>
+                <th>סוג</th>
+                <th>תאריך</th>
+                <th>שעה</th>
+                <th>שם עובד</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    
+    <script>
+        let employees = {
+            "8705416": "aliu raji",
+            "3998520": "barbakdze manana",
+            "462811677": "besrat shishay",
+            "1451492": "filmon filmon",
+            "366056955": "fshatsyon tsefa",
+            "462814639": "Natsenat Natsenat",
+            "7778514": "rosemary adegbola",
+            "123456": "test 1tes",
+            "462811042": "tsaga tsaga",
+            "462897451": "yordanos yordanos",
+            "309123422": "אבבה בליינש שירה",
+            "320412345": "אבבה שיר"
+        };
+        
+        let clocks = {
+            "3": "מתס בבוניה",
+            "5": "מתס דומה"
+        };
 
-		<!-- .clock {
-			opacity: 60%;
-			
-			right: 0;
-			position: fixed;
-			top: 0;
-			width: 150%;
-		} -->
-      #current-time{
-        font-size: 100px;
-        <!-- border: 1px solid green; -->
-      }
-	  .regular-seconds {
-      font-weight: normal;
-	  font-size: 60px;
-	  color:red;
-	  }
-      #tempsecoule {
-        //border: 1px solid black;
-	  }
-	  #sunrise {      
-        padding: 0px;
-        font-family: Helvetica;
-        font-size: 120px;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="wrapper"> 
-<h1><span canvas id="dateHeb"></span>     <span style="color: green;"id="current-date"></span>                
-<span><canvas id="clock" class="clock"></canvas></span></h1>
-<!-- <div id="hour" class="hand"></div>
-<div id="minute-hand" class="hand"></div>
- -->
-          
-	<h2 'ספירת' style="color: red;" id="hebcal-omer"></h2>	
-      <h1><span id="current-time"></span></h1>
-	<h1 style="color: blue;" id="dailyDaf"></h1>	
-      <h1><div <span style="font-size: 250px; color: green;" id="countdown"></div></h1>
-      <h1><div id="tempsecoule"></div></h1>
-      <h1><span id="sunrise"></span></h1>
-	  <p id="sunset-time"></p>
-    </div>
-  <!-- Ajouter les scripts JavaScript ici -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-  
-<!--Mondaine-->
-<script>
-	(function(){
-	var canvas = document.getElementById('clock');
-
-	var Clock = function(canvas, radius) {
-		this.canvas = canvas;
-		this.ctx = this.canvas.getContext('2d');
-
-		this.secondHandOptions = {
-			color: '#cd151c',
-			thicknessRatio: 0.03,
-			forwardRadiusRatio: 0.67,
-			backwardRadiusRatio: 0.25,
-			tipRadiusRatio: 0.075
-		}
-
-		this.minuteHandOptions = {
-			color: '#000',
-			thicknessRatio: 0.08,
-			forwardRadiusRatio: 0.855,
-			backwardRadiusRatio: 0.25
-		}
-
-		this.hourHandOptions = {
-			color: '#000',
-			thicknessRatio: 0.11,
-			forwardRadiusRatio: 0.6,
-			backwardRadiusRatio: 0.25
-		}
-
-		this.markerOptions = {
-			color: '#000',
-			edgeDistanceRatio: 0.05,
-			thicknessRatio: 0.01,
-			lengthRatio: 0.1,
-			keyMarkers: 5,
-			keyMarkerThicknessRatio: 0.075,
-			keyMarkerLengthRatio: 0.2
-		}
-
-		this.radius = radius;
-
-		this.update();
-	};
-
-	Clock.prototype.update = function() {
-    this.center = {
-      x: this.canvas.width * 0.5,
-      y: this.canvas.height * 0.5
-    }
-
-		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-		this.drawFace();
-		this.drawMinuteMarkers();
-		this.drawHourHand();
-		this.drawMinuteHand();
-		this.drawSecondHand();
-		this.drawPin();
-	};
-
-	Clock.prototype.drawFace = function() {
-		var faceGradient = this.ctx.createRadialGradient(this.center.x, this.center.y, 0, this.center.x, this.center.y, this.radius);
-		faceGradient.addColorStop(0, "rgba(255, 231, 180, 0)");
-		faceGradient.addColorStop(1, "rgba(182, 157, 100, 0.3)");
-		this.ctx.fillStyle=faceGradient;
-
-		this.ctx.beginPath();
-		this.ctx.arc(this.center.x, this.center.y, this.radius, 0, 2 * Math.PI);
-
-		this.ctx.fillStyle='#fff';
-		this.ctx.fill();
-		this.ctx.fillStyle=faceGradient;
-		this.ctx.fill();
-
-		var edgeGradient = this.ctx.createLinearGradient(0, this.center.y - this.radius, 0, this.center.y + this.radius);
-		edgeGradient.addColorStop(0, "#999");
-		edgeGradient.addColorStop(0.5, "#fff");
-		edgeGradient.addColorStop(1, "#999");
-		this.ctx.fillStyle=edgeGradient;
-
-		this.ctx.beginPath();
-		this.ctx.arc(this.center.x, this.center.y, this.radius, 0, 2 * Math.PI);
-		
-		this.ctx.closePath();
-		this.ctx.arc(this.center.x, this.center.y, this.radius + (this.radius * 0.075), 0, 2 * Math.PI, true);
-
-		this.ctx.shadowColor = 'rgba(0,0,0,0.7)';
-		this.ctx.shadowBlur = this.radius * 0.3;
-		this.ctx.shadowOffsetY = 1;
-		this.ctx.fill();
-		this.ctx.shadowBlur = 0;
-		this.ctx.shadowOffsetY = 0;
-	};
-
-	Clock.prototype.drawPin = function() {
-		this.ctx.fillStyle='#999';
-		this.ctx.beginPath();
-		this.ctx.arc(this.center.x, this.center.y, 4, 0, 2 * Math.PI);
-		this.ctx.fill();
-	};
-
-	Clock.prototype.drawMinuteMarkers = function() {
-		var i = 1;
-		while (i <= 60) {
-			var angle = (Math.PI * 2) * (-i / 60);
-
-			var startX = (Math.sin(angle) * (this.radius - (this.radius * this.markerOptions.edgeDistanceRatio))) + this.center.x;
-			var startY = (Math.cos(angle) * (this.radius - (this.radius * this.markerOptions.edgeDistanceRatio))) + this.center.y;
-
-			if (i % this.markerOptions.keyMarkers) {
-				var endX = (Math.sin(angle) * (this.radius - (this.radius * this.markerOptions.lengthRatio) - (this.radius * this.markerOptions.edgeDistanceRatio))) + this.center.x;
-				var endY = (Math.cos(angle) * (this.radius - (this.radius * this.markerOptions.lengthRatio) - (this.radius * this.markerOptions.edgeDistanceRatio))) + this.center.y;
-				this.ctx.lineWidth = this.markerOptions.thicknessRatio * this.radius;
-			} else {
-				var endX = (Math.sin(angle) * (this.radius - (this.markerOptions.keyMarkerLengthRatio * this.radius) - (this.radius * this.markerOptions.edgeDistanceRatio))) + this.center.x;
-				var endY = (Math.cos(angle) * (this.radius - (this.markerOptions.keyMarkerLengthRatio * this.radius) - (this.radius * this.markerOptions.edgeDistanceRatio))) + this.center.y;
-				this.ctx.lineWidth = this.markerOptions.keyMarkerThicknessRatio * this.radius;
-			}
-
-			this.ctx.strokeStyle = this.markerOptions.color;
-
-			this.ctx.beginPath();
-			this.ctx.moveTo(startX, startY);
-			this.ctx.lineTo(endX, endY);
-			this.ctx.stroke();
-
-			i++;
-		}
-	};
-
-	Clock.prototype.drawSecondHand = function() {
-		var milliseconds = ((Date.now() + (2 * 60 * 60 * 1000)) / 1000) % 60;
-		var handAngle = Math.max(-Math.PI * 2, (Math.PI * 2) * (-milliseconds / 58.5));
-
-		this.drawHand(handAngle, this.secondHandOptions);
-	}; 
-
-function applyHourAnimation() {
-    const hourElement = document.getElementById('hour');
-    hourElement.classList.add('hour-animation');
-    setTimeout(() => {
-        hourElement.classList.remove('hour-animation');
-    }, 300);
-}
-
-function applyHourAnimation() {
-    const hourElement = document.getElementById('hour');
-    hourElement.classList.add('hourTremble');
-    setTimeout(() => {
-        hourElement.classList.remove('hourTremble');
-    }, 100);
-}
-
-function applyMinuteAnimation() {
-    const minuteElement = document.getElementById('minute');
-    minuteElement.classList.add('minuteTremble');
-    setTimeout(() => {
-        minuteElement.classList.remove('minuteTremble');
-    }, 100);
-}
-
-Clock.prototype.drawMinuteHand = function() {
-    var minutes = Math.floor(((Date.now() + (2 * 60 * 60 * 1000)) / 60000) % 60);
-    var handAngle = (Math.PI * 2) * (-minutes / 60);
-
-    // Inversez la direction lorsque l'aiguille atteint 12 heures
-    if (Math.abs(handAngle) >= Math.PI * 2) {
-        handAngle = -handAngle;
-
-        // Effectuez le rebondissement
-        if (Math.abs(handAngle) >= Math.PI * 2) {
-            handAngle = handAngle % (Math.PI * 2);
-
-            // Ajoutez la classe pour l'animation de rebondissement
-            const minuteHandElement = document.getElementById('minute-hand');
-            minuteHandElement.classList.add('bounce-animation');
+        $(document).ready(function() {
+            let table = $('#dataTable').DataTable();
             
-            // Supprimez la classe après l'animation
-            setTimeout(() => {
-                minuteHandElement.classList.remove('bounce-animation');
-            }, 500);  // Temps de l'animation en millisecondes
-        }
-    }
-
-    this.drawHand(handAngle, this.minuteHandOptions);
-};
-
-
-
-
-
-	Clock.prototype.drawHourHand = function() {
-		var hours = ((Date.now() + (2 * 60 * 60 * 1000)) / 3600000) % 12;
-		var handAngle = (Math.PI * 2) * (-hours / 12);
-
-		this.drawHand(handAngle, this.hourHandOptions);
-	};
-
-
-	Clock.prototype.drawHand = function(angle, handOptions) {
-		var startX = (Math.sin(angle) * (this.radius * handOptions.backwardRadiusRatio)) + this.center.x;
-		var startY = (Math.cos(angle) * (this.radius * handOptions.backwardRadiusRatio)) + this.center.y;
-
-		var endX = (Math.sin(angle - Math.PI) * (this.radius * handOptions.forwardRadiusRatio)) + this.center.x;
-		var endY = (Math.cos(angle - Math.PI) * (this.radius * handOptions.forwardRadiusRatio)) + this.center.y;
-
-		this.ctx.shadowColor = 'rgba(0,0,0,0.8)';
-		this.ctx.shadowBlur = this.radius * 0.100,
-		this.ctx.shadowOffsetY = 1;
-
-		this.ctx.strokeStyle = handOptions.color;
-		this.ctx.lineWidth = handOptions.thicknessRatio * this.radius;
-
-		this.ctx.beginPath();
-		this.ctx.moveTo(startX, startY);
-		this.ctx.lineTo(endX, endY);
-		this.ctx.stroke();
-
-		if (handOptions.tipRadiusRatio) {
-			this.ctx.fillStyle = handOptions.color;
-			this.ctx.beginPath();
-			this.ctx.arc(endX, endY, handOptions.tipRadiusRatio * this.radius, 0, 2 * Math.PI);
-			this.ctx.fill();
-		}
-
-		this.ctx.shadowBlur = 0;
-		this.ctx.shadowOffsetY = 0;
-
-		if (handOptions.tipRadiusRatio) {
-			this.ctx.beginPath();
-			this.ctx.moveTo(startX, startY);
-			this.ctx.lineTo(endX, endY);
-			this.ctx.stroke();
-		}
-	};
-
-	sizeCanvas();
-
-	var clock = new Clock(canvas, clockRadius());
-
-	function clockRadius() {
-		return Math.min(window.innerWidth, window.innerHeight) * 0.75;
-	}
-
-	function sizeCanvas() {
-		canvas.width = window.innerWidth * 2;
-		canvas.height = window.innerHeight * 2;
-	}
-
-	function render() {
-		clock.update();
-		requestAnimationFrame(render);
-	}
-
-	render();
-
-	var lastWidth = window.innerWidth;
-
-	window.addEventListener('resize', function(e){
-		if (window.innerWidth != lastWidth) {
-			clock.radius = clockRadius();
-			lastWidth = window.innerWidth;
-			sizeCanvas();
-		}
-	});
-})();
-clock.update();
-</script>
-<!--עברי-->
-<script>
-	fetch('https://www.hebcal.com/converter/?cfg=json')
-		.then(response => response.json())
-		.then(data => {
-			const dayOfWeek = [
-          'יום ראשון', 'יום שני', 'יום שלישי', 'יום רביעי', 'יום חמישי', 'יום השישי ויכולו השמים והארץ וכל צבאם', 'Samedi'][new Date().getDay()];
-			const dateHeb = data.hebrew;
-			document.getElementById('dateHeb').textContent = dayOfWeek + " " + dateHeb;
-		})
-		.catch(error => {
-			console.log(error);
-			document.getElementById('dateHeb').textContent = "Erreur lors de la récupération de la date hébraïque";
-		});
-</script>
-
-<!--דף היומי-->
-<script>
-const startDate = new Date('2020-01-05'); // Date de début du cycle total
-const masechtot = ['ברכות', 'שבת', 'ערובין', 'פסחים', 'שקלים', 'ר"ה', 'יומא', 'סוכה', 'ביצה', 'תענית', 'מגילה', 'מועד-קטן', 'חגיגה', 'יבמות', 'כתובות', 'נדרים', 'נזיר', 'סוטה', 'גיטין', 'קידושין', 'בבא קמא', 'בבא מציעא', 'בבא בתרא', 'סנהדרין', 'מכות', 'שבועות', 'עבודה זרה', 'הוריות', 'זבחים', 'מנחות', 'חולין', 'בכורות', 'ערכין', 'תמורה', 'כריתות', 'מעילה', 'קינים', 'מדות', 'תמיד', 'נדה',];
-const totalPagesPerMasechet = [63, 156, 104, 120, 21, 34, 87, 55, 39, 30, 31, 28, 26, 121, 111, 90, 65, 48, 89, 81, 118, 118, 175, 112, 23, 48, 75, 13, 119, 109, 141, 60, 33, 33, 27, 20, 3, 4, 9, 72,];
-
-function calculateDafYomiDate(date) {
-  const daysPassed = Math.floor((date - startDate) / (24 * 60 * 60 * 1000));
-  let totalDaf = 0;
-
-  for (let i = 0; i < masechtot.length; i++) {
-    const totalPages = totalPagesPerMasechet[i];
-    totalDaf += totalPages;
-    if (daysPassed < totalDaf) {
-      const masechet = masechtot[i];
-      let dafNumber = daysPassed - (totalDaf - totalPages) + 2;
-      let hebrewDafNumber = convertToHebrewNumber(dafNumber);
-	  
-	  // Gérer l'exception pour le numéro de daf 16
-      if (dafNumber === 15) {
-        hebrewDafNumber = 'טו'
-		} else if (dafNumber === 16) {
-        hebrewDafNumber = 'טז';
-      }
-      return `${masechet} דף ${hebrewDafNumber}`;
-    }
-  }
-
-  return 'Cycle complet';
-}
-
-function convertToHebrewNumber(number) {
-  const hebrewUnits = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט'];
-  const hebrewTens = ['', 'י', 'כ', 'ל', 'מ', 'נ', 'ס', 'ע', 'פ', 'צ'];
-  const hebrewHundreds = ['', 'ק', 'ר', 'ש', 'ת'];
-
-  if (number <= 10) {
-    return hebrewUnits[number - 1];
-  } else if (number <= 99) {
-    const tens = Math.floor(number / 10);
-    const units = number % 10;
-    return hebrewTens[tens] + (units > 0 ? hebrewUnits[units - 1] : '');
-  } else {
-    const hundreds = Math.floor(number / 100);
-    const remainder = number % 100;
-    return hebrewHundreds[hundreds] + convertToHebrewNumber(remainder);
-  }
-}
-
-const currentDate = new Date(); // Date actuelle
-const dafYomiDate = calculateDafYomiDate(currentDate);
-
-const outputElement = document.getElementById('dailyDaf');
-outputElement.textContent = dafYomiDate;
-</script>
-
-
-<!--Omer ספירת העומר-->
-<script defer>
-let dt = new Date();
-if (dt.getHours() > 19) {
-  dt.setDate(dt.getDate() + 1);
-}
-const isoDate = dt.toISOString().substring(0, 10);
-const url = `https://www.hebcal.com/hebcal?v=1&cfg=json&o=on&lg=s&start=${isoDate}&end=${isoDate}`;
-fetch(url, {method: 'GET', credentials: 'omit'})
-  .then(response => response.json())
-  .then(data => {
-    if (data.items && data.items.length) {
-      for (const item of data.items) {
-        if (item.category === 'omer') {
-          const omerCount = parseInt(item.title.split(' ')[0]);
-          const weeksCount = Math.floor(omerCount / 7);
-          const daysCount = omerCount % 7;
-          let omerString = '';
-          if (weeksCount > 0) {
-            omerString += `${weeksCount} week${weeksCount > 1 ? 's' : ''} `;
-          }
-          if (daysCount > 0) {
-            omerString += `${daysCount} day ${daysCount > 1 ? 's' : ''}`;
-          }
-          document.getElementById('hebcal-omer').innerText = `${item.title} (${omerString})`;
-        }
-      }      
-    }
-  });
-</script>
-
-<!--לועזי-->
-<script>
-  function updateTime() {
-    const now = new Date();
-    const dayOfMonth = now.getDate();
-    const month = now.getMonth() + 1;
-    const year = now.getFullYear();
-    const hours = now.getHours().toString().padStart(2, '0');
-    const minutes = now.getMinutes().toString().padStart(2, '0');
-    const seconds = now.getSeconds().toString().padStart(2, '0');
-	const timeString = `${hours}:${minutes}<span class="regular-seconds">:${seconds}</span>`;
-	document.getElementById('current-time').innerHTML = timeString;    
-    document.getElementById('current-date').textContent = `${dayOfMonth}.${month}.${year}`;
-  }      
-  updateTime();
-  setInterval(updateTime, 1000);
-</script>
-
-
-  <script>
-	//נץ ספירה לאחור
-function updateCountdown(sunriseTime) {
-  const now = moment();
-  const diff = sunriseTime.diff(now, 'seconds');
-
-  const countdownElement = document.querySelector("#countdown");
-  if (diff <= 0) {
-    countdownElement.style.display = 'none';
-    document.querySelector("#tempsecoule").innerHTML = `<span style="font-size: 250px; color: green;">ותיקין</span>`;
-    setTimeout(() => {
-      document.querySelector("#tempsecoule").style.display = 'none';
-    }, 15000); // 15 secondes = 15000 millisecondes
-     return; // Arrêtez la fonction ici si le soleil est déjà levé
-  }
-
-  const hours = Math.floor(diff / 3600);
-  const minutes = Math.floor(diff % 3600 / 60);
-  const seconds = diff % 60;
-
-  countdownElement.innerHTML = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-
-// Changer la couleur en fonction du temps restant
-  if (diff <= 60) {
-    // Moins de 1 minute, afficher en rouge
-    countdownElement.style.color = 'red';
-  } else if (diff <= 120) {
-    // Moins de 2 minutes, afficher en bleu
-    countdownElement.style.color = 'green';
-  } else {
-    countdownElement.style.color = 'green'; // Couleur par défaut
-  }
-
-  setTimeout(() => updateCountdown(sunriseTime), 1000);
-}
-
-const today = moment().format('YYYY-MM-DD');
-const urlSun = `https://api.sunrise-sunset.org/json?lat=31.79213&lng=34.220&date=${today}`;
-fetch(urlSun)
-  .then(response => response.json())
-  .then(dataSun => {
-    const sunriseTime = moment(dataSun.results.sunrise, 'hh:mm:ss A').add(2, 'hours');
-    document.querySelector("#sunrise").innerHTML = `<span style="font-size: 60px;">זריחה</span><br> ${sunriseTime.format('HH:mm:ss')}`;
-    if (sunriseTime.diff(moment(), 'seconds') <= 0) {
-      // Si le soleil est déjà levé, mettre à jour le compte à rebours pour demain
-      const tomorrow = moment().add(1, 'days');
-      const tomorrowDate = tomorrow.format('YYYY-MM-DD');
-      const urlSunTomorrow = `https://api.sunrise-sunset.org/json?lat=31.79213&lng=34.220&date=${tomorrowDate}`;
-      fetch(urlSunTomorrow)
-        .then(response => response.json())
-        .then(dataSunTomorrow => {
-          const tomorrowSunriseTime = moment(dataSunTomorrow.results.sunrise, 'hh:mm:ss A').add(2, 'hours');
-          document.querySelector("#sunrise").innerHTML = `<span style="font-size: 60px;">מחר</span><br>${tomorrowSunriseTime.format('HH:mm:ss')}`;
-          updateCountdown(tomorrowSunriseTime);
+            $('#fileInput').on('change', function(event) {
+                let file = event.target.files[0];
+                if (!file) return;
+                
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    let lines = e.target.result.split('\n');
+                    lines.forEach(line => {
+                        if (line.trim() === '') return;
+                        
+                        let clockId = line.substring(0, 3);
+                        let type = line.substring(3, 4) === '1' ? "כניסה" : "יציאה";
+                        let date = line.substring(4, 12).replace(/(\d{4})(\d{2})(\d{2})/, "$3/$2/$1");
+                        let time = line.substring(12, 16).replace(/(\d{2})(\d{2})/, "$1:$2");
+                        let employeeId = line.substring(16, 25);
+                        
+                        let clockName = clocks[clockId] || clockId;
+                        let employeeName = employees[employeeId] || employeeId;
+                        
+                        table.row.add([clockName, type, date, time, employeeName]).draw();
+                    });
+                };
+                reader.readAsText(file);
+            });
         });
-    } else {
-      updateCountdown(sunriseTime);
-    }
-  });
-
-
-  </script>
+    </script>
 </body>
 </html>
